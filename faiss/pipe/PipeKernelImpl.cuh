@@ -10,7 +10,7 @@
 #include <faiss/pipe/PipeKernel.cuh>
 #include <faiss/gpu/utils/DeviceDefs.cuh>
 
-
+//KERNEL_COMPUTE_C_IMPL(128, 32, 2)
 #define KERNEL_COMPUTE_IMPL(THREADS, WARP_Q, THREAD_Q)            \
                                                                     \
     void KernelComputeImpl_##WARP_Q##_(                            \

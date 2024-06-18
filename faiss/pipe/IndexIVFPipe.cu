@@ -194,7 +194,7 @@ void IndexIVFPipe::train(idx_t n, const float* x) {
     }
     // leverage the CPU-side k-means code, which works for the GPU
     // flat index as well
-    cp.niter = 10;
+    cp.niter = 25;
     Clustering clus(d, nlist, cp);
     clus.verbose = verbose;
     quantizer->reset();
@@ -235,6 +235,7 @@ void IndexIVFPipe::addPaged_(int n, const float* x, idx_t* coarse_ids) {
     }
 }
 
+// 这个函数是以page的粒度调用二级索引去计算x里的向量是属于哪个cluster的
 void IndexIVFPipe::addPage_(int n, const float* x, idx_t* coarse_ids) {
     // At this point, `x` can be resident on CPU or GPU, and `ids` may be
     // resident on CPU, GPU or may be null.
@@ -756,12 +757,14 @@ void IndexIVFPipe::balance() {
         const uint8_t* codes_list = invlists->get_codes(i);
         size_t list_size = invlists->list_size(i);
         size_t bytes = list_size * code_size;
-        float *codes_list_float = (float*)malloc(bytes);
+        // float *codes_list_float = (float*)malloc(bytes);
+        float *codes_list_float = new float[bytes/4];
         memcpy(codes_list_float, codes_list, bytes);
 
         const idx_t* index_list = invlists->get_ids(i);
         bytes = list_size * sizeof(int);
-        int *index_list_int = (int*)malloc(bytes);
+        // int *index_list_int = (int*)malloc(bytes);
+        int *index_list_int = new int[bytes/4];
         // memcpy(index_list_int, index_list, bytes);
 
         // Conver index id type (int64 -> int32)
@@ -771,7 +774,6 @@ void IndexIVFPipe::balance() {
 
         // Free the original data in case of Host memory oversubscription
         invlists->free_codes(i);
-
         invlists->free_idx(i);
         
         sizes[i] = (int)list_size;
@@ -780,9 +782,9 @@ void IndexIVFPipe::balance() {
     }
 
     // Construct PipeCluster from the origional clusters' data.
+    delete invlists;
     pipe_cluster = new PipeCluster(nlist, d, sizes, pointers, 
         indexes, ivfPipeConfig_.interleavedLayout, use_pin_memory);
-    delete invlists;
     balanced = true;
 
 }

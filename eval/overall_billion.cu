@@ -67,6 +67,37 @@ double inter_sec(int *taget, int *gt, int k){
     return res / k;
 }
 
+// float* fvecs_read(const char* fname, size_t* d_out, size_t* n_out) {
+//     FILE* f = fopen(fname, "r");
+//     if (!f) {
+//         fprintf(stderr, "could not open %s\n", fname);
+//         perror("");
+//         abort();
+//     }
+//     int d;
+//     fread(&d, 1, sizeof(int), f);
+//     assert((d > 0 && d < 1000000) || !"unreasonable dimension");
+//     fseek(f, 0, SEEK_SET);
+//     struct stat st;
+//     fstat(fileno(f), &st);
+//     size_t sz = st.st_size;
+//     assert(sz % ((d + 1) * 4) == 0 || !"weird file size");
+//     size_t n = sz / ((d + 1) * 4);
+
+//     *d_out = d;
+//     *n_out = n;
+//     float* x = new float[n * (d + 1)];
+//     size_t nr = fread(x, sizeof(float), n * (d + 1), f);
+//     assert(nr == n * (d + 1) || !"could not read whole file");
+
+//     // shift array to remove row headers
+//     for (size_t i = 0; i < n; i++)
+//         memmove(x + i * d, x + 1 + i * (d + 1), d * sizeof(*x));
+
+//     fclose(f);
+//     return x;
+// }
+
 float* fvecs_read(const char* fname, size_t* d_out, size_t* n_out) {
     FILE* f = fopen(fname, "r");
     if (!f) {
@@ -74,25 +105,17 @@ float* fvecs_read(const char* fname, size_t* d_out, size_t* n_out) {
         perror("");
         abort();
     }
-    int d;
+    int n, d;
+    fread(&n, 1, sizeof(int), f);
     fread(&d, 1, sizeof(int), f);
+    std::cout<<n<<" "<<d<<std::endl;
     assert((d > 0 && d < 1000000) || !"unreasonable dimension");
-    fseek(f, 0, SEEK_SET);
-    struct stat st;
-    fstat(fileno(f), &st);
-    size_t sz = st.st_size;
-    assert(sz % ((d + 1) * 4) == 0 || !"weird file size");
-    size_t n = sz / ((d + 1) * 4);
 
     *d_out = d;
     *n_out = n;
-    float* x = new float[n * (d + 1)];
-    size_t nr = fread(x, sizeof(float), n * (d + 1), f);
-    assert(nr == n * (d + 1) || !"could not read whole file");
-
-    // shift array to remove row headers
-    for (size_t i = 0; i < n; i++)
-        memmove(x + i * d, x + 1 + i * (d + 1), d * sizeof(*x));
+    std::cout<<(size_t(n) * size_t(d))<<std::endl;
+    float* x = new float[size_t(n) * size_t(d)];
+    size_t nr = fread(x, sizeof(float), size_t(n) * size_t(d), f);
 
     fclose(f);
     return x;
@@ -232,6 +255,13 @@ int main(int argc,char **argv){
         gtI = "/billion-data/data3/text1Bgti.ivecs";
         gtD = "/billion-data/data3/text1Bgtd.fvecs";
         dim = 200;
+        ncentroids = 192;
+    }
+    else if (p1 == "turing"){
+        db = "/home/ubuntu/projects/big-ann-benchmarks/data/MSTuringANNS/base1b.fbin.crop_nb_100000000";
+        train_db = "/home/ubuntu/projects/big-ann-benchmarks/data/MSTuringANNS/base1b.fbin.crop_nb_100000000";
+        query = "/home/ubuntu/projects/big-ann-benchmarks/data/MSTuringANNS/query100K.fbin";
+        dim = 100;
         ncentroids = 192;
     }
     else{

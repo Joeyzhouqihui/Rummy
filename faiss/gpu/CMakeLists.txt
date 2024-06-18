@@ -177,7 +177,7 @@ foreach(header ${FAISS_GPU_HEADERS})
   )
 endforeach()
 
-list (APPEND PRJ_COMPILE_OPTIONS -Xcompiler)
+# list (APPEND PRJ_COMPILE_OPTIONS -Xcompiler)
 find_package (OpenMP)
 if (OpenMP_FOUND)
 	list ( APPEND PRJ_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS} )

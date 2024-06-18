@@ -143,6 +143,9 @@ public:
 
     double reorder_time = 0.;
 
+    size_t cache_hit_cnt = 0;
+    size_t total_access_cnt = 0;
+
     int threads = 0;
     std::vector<int> thread_order;
 
@@ -273,6 +276,7 @@ public:
     int max_size;
 
     // result of group algorithm
+    // 应该是每个group里有多少个cluster
     std::vector<int> groups;
 
     PipeProfiler* profiler;
@@ -295,6 +299,8 @@ public:
     // int max_quries_num = -1;
 
     int com_index = 0;
+
+    double sample_time = 0.;
 
     double com_time = 0.;
 

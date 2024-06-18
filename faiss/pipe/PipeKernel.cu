@@ -304,7 +304,7 @@ void runKernelComputeReduce(
     int maxcluster_per_query,
     PipeTensor<int, 1, true> queryids,
     PipeTensor<float, 2, true> queries,
-    PipeTensor<int, 2, true> query_cluster_matrix,
+    PipeTensor<int, 2, true> query_cluster_matrix, //每个query对应哪些cluster
     void** deviceListDataPointers_,
     IndicesOptions indicesOptions,
     int* deviceListLengths_,
@@ -331,6 +331,7 @@ void runKernelComputeReduce(
     }
     FAISS_ASSERT(goodsplit == true);
 
+    // on GPU
     PipeTensor<float, 3, true> best_distances({nquery, maxcluster_per_query, (int)k * split}, pc);
     best_distances.setResources(pc, pipe_res);
     best_distances.reserve();

@@ -302,9 +302,13 @@ void PipeCluster::mallocPinnedMem(){
         }
         
         // Free the nopinned memory
-        free(noPinnedMem[i]);
-        free(noBalan_ids[i]);
+        // free(noPinnedMem[i]);
+        // free(noBalan_ids[i]);
+        delete[] noPinnedMem[i];
+        delete[] noBalan_ids[i];
     }
+    noPinnedMem.clear();
+    noBalan_ids.clear();
     // Check the correctness of pinned malloc
     FAISS_ASSERT(index == BCluSize.size());
 

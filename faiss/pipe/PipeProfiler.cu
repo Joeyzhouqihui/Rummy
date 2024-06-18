@@ -324,30 +324,25 @@ void PipeProfiler::ComProfiler::train(){
     ListDataP_.copyFrom(ListDataP_vec, h2d_stream);
     ListDataP_.setResources(pc, pgr);
     ListDataP_.memh2d(h2d_stream);
-
     void** ListDataP = ListDataP_.devicedata();
 
     faiss::gpu::PipeTensor<int, 1, true> ListLength_({listNum}, pc);
     ListLength_.copyFrom(ListLength_vec, h2d_stream);
     ListLength_.setResources(pc, pgr);
     ListLength_.memh2d(h2d_stream);
-
     int* ListLength = ListLength_.devicedata();
 
     faiss::gpu::PipeTensor<void*, 1, true> ListIndexP_({listNum}, pc);
     ListIndexP_.copyFrom(ListIndexP_vec, h2d_stream);
     ListIndexP_.setResources(pc, pgr);
     ListIndexP_.memh2d(h2d_stream);
-
     void** ListIndexP = ListIndexP_.devicedata();
 
     int* queryids = (int*)malloc(sizeof(int) * ntmax);
     for (int i = 0; i < ntmax; i++){
         queryids[i] = i;
     }
-
     int nq = 16;
-
     faiss::gpu::PipeTensor<int, 1, true> queryids_gpu({nq}, pc);
     queryids_gpu.copyFrom(queryids, h2d_stream);
     queryids_gpu.setResources(pc, pgr);
@@ -369,7 +364,6 @@ void PipeProfiler::ComProfiler::train(){
     }
 
     // query*cluster
-    
     int maxClus = p->maxDataCnt / nq;
 
     int clus = 1;
@@ -380,6 +374,7 @@ void PipeProfiler::ComProfiler::train(){
         std::default_random_engine generator;
         std::normal_distribution<double> distribution(clus, 0.8 * (double)clus);
 
+        //假设batch里query的clus总数是2*clus, 每个query有clus个
         for (int i = 1; i < nq; i += 2) {
             int number = rand() % (2 * clus);//(int)distribution(generator);
             if(number >= 2 * clus){

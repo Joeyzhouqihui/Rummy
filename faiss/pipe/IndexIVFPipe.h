@@ -331,7 +331,9 @@ struct IndexIVFPipe: Index {
     // we allocate nthread buffer to save them saparately.
     int nthread = omp_get_max_threads();
     // printf("debug : Sample threads %d\n", nthread);
+    // 每个cluster对应哪些query
     int* clusters_query_matrix = (int*)malloc(nlist * nthread * n * sizeof(int));
+    // 每个cluster有多少个query需要计算
     int* query_per_cluster = (int*)malloc(nthread * nlist * sizeof(int));
     
     std::vector<int> query_per_cluster_total;

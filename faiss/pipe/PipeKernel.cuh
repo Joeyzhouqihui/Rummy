@@ -36,9 +36,9 @@ namespace gpu {
 template <
         typename Codec,
         typename Metric,
-        int ThreadsPerBlock,
-        int NumWarpQ,
-        int NumThreadQ,
+        int ThreadsPerBlock, //128
+        int NumWarpQ, //32
+        int NumThreadQ, //2
         bool Residual>
 __global__ void KernelCompute(
         int d,

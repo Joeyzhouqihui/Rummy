@@ -487,6 +487,7 @@ void *computation(void *arg){
         printf("debug : tranpose time %.3f\n", (elapsed() - t0)*1000);
 
     // Prepare the data
+    // Cluster用csr来存
     std::vector<void*> ListDataP_vec(param->clunum);
     std::vector<void*> ListIndexP_vec(param->clunum);
     std::vector<int> ListLength_vec(param->clunum);
@@ -577,6 +578,7 @@ void *computation(void *arg){
     cudaStreamSynchronize(exec_stream);
     t = elapsed();
 
+    // 这里的一个kernel处理一个query-cluster的计算，dataCnt表示有多少这样的计算
     int split = param->sche->profiler->decideSplit(shape.first, dataCnt);
 
     bool dir;
@@ -647,10 +649,19 @@ void *computation(void *arg){
     return((void *)0);
 }
 
-PipeScheduler::PipeScheduler(IndexIVFPipe* index, PipeCluster* pc, PipeGpuResources* pgr, int bcluster_cnt_,
-        int* bcluster_list_, int* query_per_bcluster_, int maxquery_per_bcluster_,
-        int* bcluster_query_matrix_, PipeProfiler* profiler_,
-        int queryMax_, int clusMax_, bool free_) 
+PipeScheduler::PipeScheduler(
+        IndexIVFPipe* index, 
+        PipeCluster* pc, 
+        PipeGpuResources* pgr, 
+        int bcluster_cnt_,
+        int* bcluster_list_, 
+        int* query_per_bcluster_, 
+        int maxquery_per_bcluster_,
+        int* bcluster_query_matrix_, 
+        PipeProfiler* profiler_,
+        int queryMax_, 
+        int clusMax_, 
+        bool free_) 
         : index_(index), pc_(pc), pgr_(pgr), bcluster_cnt(bcluster_cnt_), profiler(profiler_),
         bcluster_list(bcluster_list_), query_per_bcluster(query_per_bcluster_), \
         maxquery_per_bcluster(maxquery_per_bcluster_), \
@@ -676,9 +687,23 @@ PipeScheduler::PipeScheduler(IndexIVFPipe* index, PipeCluster* pc, PipeGpuResour
 
         }
 
-PipeScheduler::PipeScheduler(IndexIVFPipe* index, PipeCluster* pc, PipeGpuResources* pgr,
-            int n, float *xq, int k, float *dis, int *label, bool free_)
-            : index_(index), pc_(pc), pgr_(pgr), profiler(index->profiler), batch_size(n){
+PipeScheduler::PipeScheduler(
+            IndexIVFPipe* index, 
+            PipeCluster* pc, 
+            PipeGpuResources* pgr,
+            int n, 
+            float *xq, 
+            int k, 
+            float *dis, 
+            int *label, 
+            bool free_)
+            : 
+            index_(index), 
+            pc_(pc), 
+            pgr_(pgr), 
+            profiler(index->profiler), 
+            batch_size(n) {
+
                 DeviceScope *scope;
                 if(index != nullptr)
                     scope = new DeviceScope(index->ivfPipeConfig_.device);
@@ -688,11 +713,15 @@ PipeScheduler::PipeScheduler(IndexIVFPipe* index, PipeCluster* pc, PipeGpuResour
                 int actual_nprobe;
                 int maxbcluster_per_query;
                 auto t0 = elapsed();
-                index->sample_list(n, xq, &coarse_dis, &ori_idx,\
+                index->sample_list(
+                    n, xq, &coarse_dis, &ori_idx,\
                     &bcluster_per_query, &actual_nprobe, &query_bcluster_matrix, &maxbcluster_per_query,\
                     &bcluster_cnt, &bcluster_list, &query_per_bcluster, &maxquery_per_bcluster,\
                     &bcluster_query_matrix);
                 auto t1 = elapsed();
+                
+                sample_time = t1 - t0;
+
                 if(verbose)
                     printf("Sample Time: %.3f ms\n", (t1 - t0)*1000);
                 t0 = t1;

@@ -23,13 +23,14 @@ namespace gpu {
 namespace {
 
 // Default temporary memory allocation
-constexpr size_t kTempMem = (size_t)64 * 1024 * 1024;
+constexpr size_t kTempMem = (size_t)64 * 1024 * 1024ll;
 
-// Default Max Device memory allocation (15Gib)
-constexpr size_t kMaxDeviceMem = (size_t)36 * 1024 * 1024 * 1024ll;
+// Default Max Device memory allocation (12G)
+constexpr size_t kMaxDeviceMem = (size_t)20 * 1024 * 1024 * 1024ll;
 
 // Default page size allocation (1 MB)
-constexpr size_t kPagesize = (size_t)1 * 1024 * 1024;
+// constexpr size_t kPagesize = (size_t)1 * 1024 * 1024ll;
+constexpr size_t kPagesize = (size_t)256 * 1024ll;
 
 size_t adjustStackSize(size_t size) {
     if (size == 0) {
@@ -348,6 +349,7 @@ void PipeGpuResources::initializeForDevice(int device, PipeCluster *pc){
     std::fill(pageinfo.begin(), pageinfo.end(), -1);
 
     // Construct the avl tree of free pages
+    // (Key-Value: LRU count -> page id) 
     auto tmptree = std::unique_ptr<PipeAVLTree<int,int> >
             (new PipeAVLTree<int, int>());
     for (int i = 0 ;i < pageNum; i++)
